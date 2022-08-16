@@ -11,9 +11,14 @@ model_path = "weights\\res10_300x300_ssd_iter_140000_fp16.caffemodel"
 # load Caffe model
 model = cv2.dnn.readNetFromCaffe(prototxt_path, model_path)
 # path to image
-image_path = "1626541519_0161.jpg"
+image_path = "1626541519_0119.jpg"
+#define number of horizontal and vertical sections to pass in slice_image function
+v_sections = 37 # this was defined applying the formula width/width_expected, width expected for this model is 300 px (ej. 11000/300 =36.6)
+h_sections = 18 # this was defined applying the formula height/height_expected, height expected for this model is 300 px (ej. 5500/300 = 18.3)
 
-subsections = slice_image(image_path)  #get subsections using slice function
+
+
+subsections = slice_image(image_path,v_sections,h_sections)  #get subsections using slice function
 aux = []
 for i in range(0,len(subsections)):
     image = (subsections[i])
@@ -22,7 +27,7 @@ for i in range(0,len(subsections)):
     kernel_width =  (w // 7) | 1
     kernel_height = (h // 7) | 1
     # preprocess the image: resize and performs mean subtraction 
-    blob = cv2.dnn.blobFromImage(image, 1.0, (h,w), (104,117,124),swapRB=False)
+    blob = cv2.dnn.blobFromImage(image, 1, (h,w), (104,117,124),swapRB=False) #this varies model to model please check model documentation
     # set the image into the input of the neural network
     model.setInput(blob)
     # perform inferencen and get the result
@@ -47,6 +52,6 @@ for i in range(0,len(subsections)):
             except:
                 pass     
     aux.append(image)
-new_image = merge_image(aux)
+new_image = merge_image(aux,v_sections,h_sections)
 
 cv2.imwrite("image_blurred.jpg", new_image)

@@ -1,10 +1,8 @@
 import cv2
 import numpy as np
 
-v_sections = 6 #define de number of vertical sections to slice image
-h_sections = 4 #define de number of horizontal sections to slice image
 
-def slice_image(path):
+def slice_image(path,v_sections,h_sections):
     # cv2.imread() -> takes an image as an input 
     img = cv2.imread(path)
     h, w = img.shape[:2]  #read  size of image
@@ -21,7 +19,7 @@ def slice_image(path):
     return images
     
 
-def merge_image(images):
+def merge_image(images,v_sections,h_sections):
     #image = images[0]
     aux = []
     for i in range(0,h_sections):

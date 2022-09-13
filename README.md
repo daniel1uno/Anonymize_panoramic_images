@@ -1,11 +1,34 @@
-# Blur_faces_plates_panoramic_images
-Blur faces and licenses plates out of panoramic 360 images, this functions were created to use on large images (example data has 11000 x 5500 px). 
+**
+
+## Blur_faces_plates_panoramic_images
+
+**
+Blur faces and licenses plates out of panoramic 360 images, this functions were created to use on large images (example data has 11000 x 5500 px) obtained from mobile mapping.
 
 How it works: it takes larges images as input, the function *slice* is used to divided each image into multiple sections,
-then, those sections are passed to deep learning models in order to  detect and blur faces and license plates, once the detection has finished the function  *merge* is used to rebuild the original image.
+
+then, those sections are passed to deep learning models in order to detect and blur faces and license plates, once the detection has finished the function *merge* is used to rebuild the original image.
 
 To detect faces retinaface is used: https://github.com/serengil/retinaface.git
+
 To detect licenses plates lpr_caffe_model is used: https://github.com/scorpiochang/Mobilenet-SSD-License-Plate-Detection.git
 
+ #Structure:
 
+ - data folder contains example data
+ - results folder store the processed images
+ - weights folder store caffe license plate detection model
+ - functions.py contains all the functions created to run
+ - anonymizer.py start the program
 
+ 
+#How to use:  
+
+ - Install requirements
+ - Modify blur_faces_licenses function in functions.py to adjust to your own necessity 
+ - Run anonymizer.py, the program will ask for **input path** of images and **output path** for
+   processed images
+
+There's also a logger built to store results of the processing
+
+python> 3.5 is required

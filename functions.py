@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from retinaface import RetinaFace
 import ntpath
+import json
 
 
 def read_lpd_model():
@@ -41,12 +42,28 @@ def merge_image(images, v_sections, h_sections):
     merged_image = np.concatenate((aux[:]), axis=0)
     return merged_image
 
+def create_logger():
+    with open('log.json','w') as file:
+        file_data={"img_details":[]}
+        json.dump(file_data,file)
+        print("results are being stored in log.json")
+
+def write_json(new_data): #this acts as a logger
+    with open('log.json','r+') as file:
+        # First we load existing data into a dict.
+        file_data = json.load(file)
+        # Join new_data with file_data inside emp_details
+        file_data["img_details"].append(new_data)
+        # Sets file's current position at offset.
+        file.seek(0)
+        # convert back to json.
+        json.dump(file_data, file, indent = 4)
 
 def blur_faces_licenses(in_image, out_path):
 
     model = read_lpd_model()
     # define number of sections to slice the panoramic image
-    v, h = 5, 4
+    v, h = 5, 4  # this params depends on large of image, adjust to your own necessity
 
     # get subsections using slice function
     subsections = slice_image(in_image, v, h)
@@ -54,6 +71,7 @@ def blur_faces_licenses(in_image, out_path):
     aux = []
     counter_faces = 0
     counter_plates = 0
+
     for i in range(0, len(subsections)):
         img = subsections[i]
         he, wi = img.shape[:2]
@@ -64,6 +82,7 @@ def blur_faces_licenses(in_image, out_path):
             img, 0.007843, (he, wi), 127.5, swapRB=True)
         model.setInput(blob)
         output = np.squeeze(model.forward())
+
         for i in range(0, output.shape[0]):
             confidence = output[i, 2]
 
@@ -87,5 +106,10 @@ def blur_faces_licenses(in_image, out_path):
     print('Image ' +
           ntpath.basename(in_image)+'  succesfully processed with '+str(counter_faces)+' faces and ' + str(counter_plates) + ' licenses plates detected')
     new_image = merge_image(aux, v, h)
+    log_details = {"image": ntpath.basename(in_image),
+           "faces_detected": counter_faces,
+           "licenses_plates_detected": counter_plates
+           }
+    write_json(log_details)
 
     return cv2.imwrite(out_path + ntpath.basename(in_image), new_image)

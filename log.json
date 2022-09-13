@@ -1,0 +1,24 @@
+{
+    "img_details": [
+        {
+            "image": "1626541519_0179.jpg",
+            "faces_detected": 15,
+            "licenses_plates_detected": 16
+        },
+        {
+            "image": "1626541519_0276.jpg",
+            "faces_detected": 10,
+            "licenses_plates_detected": 17
+        },
+        {
+            "image": "1626541519_0119.jpg",
+            "faces_detected": 7,
+            "licenses_plates_detected": 9
+        },
+        {
+            "image": "1626541519_0161.jpg",
+            "faces_detected": 10,
+            "licenses_plates_detected": 9
+        }
+    ]
+}

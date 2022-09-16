@@ -3,4 +3,6 @@
 *.py[cod]
 *$py.class
 yolov4-custom_best.weights
-__pycache__\
+__pycache__/
+*.py[cod]
+*$py.class

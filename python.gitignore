@@ -1,5 +1,0 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
-YoloV4_custom_weights\yolov4-custom_best.weights

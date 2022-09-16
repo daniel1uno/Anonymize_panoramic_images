@@ -2,4 +2,4 @@
 __pycache__/
 *.py[cod]
 *$py.class
-yolov4-custom_best.weights
+YoloV4_custom_weights\yolov4-custom_best.weights

@@ -3,6 +3,4 @@
 *.py[cod]
 *$py.class
 yolov4-custom_best.weights
-__pycache__/
-*.py[cod]
-*$py.class
+bfg-1.14.0.jar

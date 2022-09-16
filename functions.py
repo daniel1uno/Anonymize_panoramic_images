@@ -5,14 +5,6 @@ import ntpath
 import json
 
 
-def read_lpd_model():
-    prototxt_path = "weights/license_plate/deploy.prototxt.txt"
-    model_path = "weights/license_plate/lpr.caffemodel"
-    model = cv2.dnn.readNetFromCaffe(prototxt_path, model_path)
-    # load Caffe model
-    return model
-
-
 def slice_image(path, v_sections, h_sections):
     # cv2.imread() -> takes an image as an input
     img = cv2.imread(path)
@@ -32,24 +24,25 @@ def slice_image(path, v_sections, h_sections):
 
 
 def merge_image(images, v_sections, h_sections):
-    #image = images[0]
+
     aux = []
     for i in range(0, h_sections):
         image = np.concatenate(
             (images[(i*v_sections):(i*v_sections)+v_sections]), axis=1)
         aux.append(image)
-
     merged_image = np.concatenate((aux[:]), axis=0)
     return merged_image
 
+
 def create_logger():
-    with open('log.json','w') as file:
-        file_data={"img_details":[]}
-        json.dump(file_data,file)
+    with open('log.json', 'w') as file:
+        file_data = {"img_details": []}
+        json.dump(file_data, file)
         print("results are being stored in log.json")
 
-def write_json(new_data): #this acts as a logger
-    with open('log.json','r+') as file:
+
+def write_json(new_data):  # this acts as a logger
+    with open('log.json', 'r+') as file:
         # First we load existing data into a dict.
         file_data = json.load(file)
         # Join new_data with file_data inside emp_details
@@ -57,59 +50,81 @@ def write_json(new_data): #this acts as a logger
         # Sets file's current position at offset.
         file.seek(0)
         # convert back to json.
-        json.dump(file_data, file, indent = 4)
+        json.dump(file_data, file, indent=4)
 
-def blur_faces_licenses(in_image, out_path):
 
-    model = read_lpd_model()
-    # define number of sections to slice the panoramic image
-    v, h = 5, 4  # this params depends on large of image, adjust to your own necessity
+def blur_faces_licenses(in_image, out_path, model):
+
+    sec_v, sec_h = 7, 6  # this params depends on large of image, adjust to your own necessity
 
     # get subsections using slice function
-    subsections = slice_image(in_image, v, h)
-
-    aux = []
+    subsections = slice_image(in_image, sec_v, sec_h)
+    aux_images = []
     counter_faces = 0
     counter_plates = 0
 
     for i in range(0, len(subsections)):
+
         img = subsections[i]
-        he, wi = img.shape[:2]
+        img_h, img_w = img.shape[:2]
 
-        detections = RetinaFace.detect_faces(img, threshold=0.4)
+        # face detections
+        face_detections = RetinaFace.detect_faces(img, threshold=0.4)
 
-        blob = cv2.dnn.blobFromImage(
-            img, 0.007843, (he, wi), 127.5, swapRB=True)
-        model.setInput(blob)
-        output = np.squeeze(model.forward())
+        if type(face_detections) is dict:  # check that detection was successfull
 
-        for i in range(0, output.shape[0]):
-            confidence = output[i, 2]
-
-            if confidence > 0.40:
-                box = output[i, 3:7] * np.array([wi, he, wi, he])
-                start_x, start_y, end_x, end_y = box.astype(int)
-                plate_detected = img[start_y: end_y, start_x: end_x]
-                plate_detected = cv2.blur(plate_detected, (20, 20))
-                img[start_y: end_y, start_x: end_x] = plate_detected
-                counter_plates += 1
-
-        if type(detections) is dict:  # check that detection was successfull
-
-            for face in detections:
-                start_x, start_y, end_x, end_y = detections[face]['facial_area']
+            for face in face_detections:
+                start_x, start_y, end_x, end_y = face_detections[face]['facial_area']
                 detected_face = img[start_y: end_y, start_x: end_x]
                 detected_face = cv2.blur(detected_face, (20, 20))
                 img[start_y: end_y, start_x: end_x] = detected_face
                 counter_faces += 1
-        aux.append(img)
+
+        # license_plates detections
+        blob = cv2.dnn.blobFromImage(
+            img, 1 / 255, (416, 416), (0, 0, 0), swapRB=True, crop=False)
+        model.setInput(blob)
+        output_layer_names = model.getUnconnectedOutLayersNames()
+        layer_outputs = model.forward(output_layer_names)
+        boxes = []
+        confidences = []
+        for output in layer_outputs:
+            for detection in output:
+                confidence = detection[5:]
+
+                if confidence > 0.3:
+                    box = detection[0:4] * \
+                        np.array([img_w, img_h, img_w, img_h])
+                    centerX, centerY, width, height = box.astype("int")
+                    x = int(centerX - width / 2)
+                    y = int(centerY - height / 2)
+                    boxes.append([x, y, width, height])
+                    confidences.append(float(confidence))
+
+        idxs = cv2.dnn.NMSBoxes(boxes, confidences, 0.2, 0.4)
+        if len(idxs) > 0:
+            # loop over the indexes we are keeping
+            for i in idxs.flatten():
+                coordinates = np.array(
+                    [boxes[i][0], boxes[i][1], boxes[i][0]+boxes[i][2], boxes[i][1]+boxes[i][3]])
+                coordinates = coordinates.clip(0)
+                start_x, start_y, end_x, end_y = coordinates
+                #print(start_x, start_y, end_x, end_y)
+                plate_detected = img[start_y: end_y, start_x: end_x]
+                blur_plate = cv2.blur(plate_detected, (20, 20))
+                img[start_y: end_y, start_x: end_x] = blur_plate
+                counter_plates += 1
+
+        aux_images.append(img)
+        
+    new_image = merge_image(aux_images, sec_v, sec_h)
     print('Image ' +
           ntpath.basename(in_image)+'  succesfully processed with '+str(counter_faces)+' faces and ' + str(counter_plates) + ' licenses plates detected')
-    new_image = merge_image(aux, v, h)
+
     log_details = {"image": ntpath.basename(in_image),
-           "faces_detected": counter_faces,
-           "licenses_plates_detected": counter_plates
-           }
+                   "faces_detected": counter_faces,
+                   "licenses_plates_detected": counter_plates
+                   }
     write_json(log_details)
 
     return cv2.imwrite(out_path + ntpath.basename(in_image), new_image)

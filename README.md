@@ -10,14 +10,16 @@ How it works: it takes larges images as input, the function *slice* is used to d
 then, those sections are passed to deep learning models in order to detect and blur faces and license plates, once the detection has finished the function *merge* is used to rebuild the original image.
 
 To detect faces retinaface is used: https://github.com/serengil/retinaface.git
+To detect License plates a yolov4 detector was trained, the training dataset is composed of many images of colombian license plates. keep in mind this model was specifically trained for panoramic images
+(usually license plates are very low resolution on this kind of photos)
 
-To detect licenses plates lpr_caffe_model is used: https://github.com/scorpiochang/Mobilenet-SSD-License-Plate-Detection.git
+To detect licenses pla
 
  #Structure:
 
  - data folder contains example data
  - results folder store the processed images
- - weights folder store caffe license plate detection model
+ - YoloV4_custom_weights folder store the custom weights for myolov4 detector trained 
  - functions.py contains all the functions created to run
  - anonymizer.py start the program
 

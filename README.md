@@ -13,7 +13,6 @@ To detect faces retinaface is used: https://github.com/serengil/retinaface.git
 To detect License plates a yolov4 detector was trained, the training dataset is composed of many images of colombian license plates. keep in mind this model was specifically trained for panoramic images
 (usually license plates are very low resolution on this kind of photos) weights can be downloaded from here https://drive.google.com/drive/folders/1QWFvzb9p7KGFKpu3VcCRgD4R1X67-1_l?usp=sharing
 
-To detect licenses pla
 
  #Structure:
 

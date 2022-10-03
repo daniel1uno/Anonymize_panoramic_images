@@ -1,0 +1,14 @@
+{
+    "img_details": [
+        {
+            "image": "1658781276_0001.jpg",
+            "faces_detected": 52,
+            "licenses_plates_detected": 12
+        },
+        {
+            "image": "1658781276_0003.jpg",
+            "faces_detected": 46,
+            "licenses_plates_detected": 15
+        }
+    ]
+}

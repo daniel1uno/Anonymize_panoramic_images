@@ -1,6 +1,6 @@
 opencv-python
 numpy
-retinaface
+retina-face
 ntpath
 glob
 json

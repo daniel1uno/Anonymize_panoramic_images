@@ -34,15 +34,15 @@ def merge_image(images, v_sections, h_sections):
     return merged_image
 
 
-def create_logger():
-    with open('log.json', 'w') as file:
+def create_logger(out_path):
+    with open(out_path+'\log.json', 'w') as file:
         file_data = {"img_details": []}
         json.dump(file_data, file)
         print("results are being stored in log.json")
 
 
-def write_json(new_data):  # this acts as a logger
-    with open('log.json', 'r+') as file:
+def write_json(new_data,out_path):  # this acts as a logger
+    with open(out_path+'\log.json', 'r+') as file:
         # First we load existing data into a dict.
         file_data = json.load(file)
         # Join new_data with file_data inside emp_details
@@ -53,7 +53,7 @@ def write_json(new_data):  # this acts as a logger
         json.dump(file_data, file, indent=4)
 
 
-def blur_faces_licenses(in_image, out_path, model):
+def blur_faces_licenses(in_image, out_path, model, out_folder):
 
     sec_v, sec_h = 7, 6  # this params depends on large of image, adjust to your own necessity
 
@@ -125,6 +125,6 @@ def blur_faces_licenses(in_image, out_path, model):
                    "faces_detected": counter_faces,
                    "licenses_plates_detected": counter_plates
                    }
-    write_json(log_details)
+    write_json(log_details,out_folder)
 
     return cv2.imwrite(out_path + ntpath.basename(in_image), new_image)

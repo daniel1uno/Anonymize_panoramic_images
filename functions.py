@@ -1,8 +1,10 @@
 import cv2
 import numpy as np
 from retinaface import RetinaFace
-import ntpath
 import json
+import os
+
+
 
 
 def slice_image(path, v_sections, h_sections):
@@ -23,6 +25,7 @@ def slice_image(path, v_sections, h_sections):
     return images
 
 
+
 def merge_image(images, v_sections, h_sections):
 
     aux = []
@@ -35,14 +38,14 @@ def merge_image(images, v_sections, h_sections):
 
 
 def create_logger(out_path):
-    with open(out_path+'\log.json', 'w') as file:
+    with open(os.path.join(out_path,'log.json'), 'w') as file:
         file_data = {"img_details": []}
         json.dump(file_data, file)
         print("results are being stored in log.json")
 
 
-def write_json(new_data,out_path):  # this acts as a logger
-    with open(out_path+'\log.json', 'r+') as file:
+def write_json(new_data, out_path):  # this acts as a logger
+    with open(os.path.join(out_path,'log.json'), 'r+') as file:
         # First we load existing data into a dict.
         file_data = json.load(file)
         # Join new_data with file_data inside emp_details
@@ -116,15 +119,15 @@ def blur_faces_licenses(in_image, out_path, model, out_folder):
                 counter_plates += 1
 
         aux_images.append(img)
-        
+
     new_image = merge_image(aux_images, sec_v, sec_h)
     print('Image ' +
-          ntpath.basename(in_image)+'  succesfully processed with '+str(counter_faces)+' faces and ' + str(counter_plates) + ' licenses plates detected')
+          os.path.basename(in_image)+'  succesfully processed with '+str(counter_faces)+' faces and ' + str(counter_plates) + ' licenses plates detected')
 
-    log_details = {"image": ntpath.basename(in_image),
+    log_details = {"image": os.path.basename(in_image),
                    "faces_detected": counter_faces,
                    "licenses_plates_detected": counter_plates
                    }
-    write_json(log_details,out_folder)
+    write_json(log_details, out_folder)
 
-    return cv2.imwrite(out_path + ntpath.basename(in_image), new_image)
+    return cv2.imwrite(os.path.join(out_path, os.path.basename(in_image)), new_image)

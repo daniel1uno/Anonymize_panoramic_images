@@ -1,7 +1,6 @@
 opencv-python
 numpy
 retina-face
-ntpath
 glob
 json
 datetime

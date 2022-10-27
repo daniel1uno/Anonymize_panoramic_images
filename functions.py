@@ -3,8 +3,8 @@ import numpy as np
 from retinaface import RetinaFace
 import json
 import os
-
-
+from PIL import Image
+import io
 
 
 def slice_image(path, v_sections, h_sections):
@@ -25,7 +25,6 @@ def slice_image(path, v_sections, h_sections):
     return images
 
 
-
 def merge_image(images, v_sections, h_sections):
 
     aux = []
@@ -38,14 +37,14 @@ def merge_image(images, v_sections, h_sections):
 
 
 def create_logger(out_path):
-    with open(os.path.join(out_path,'log.json'), 'w') as file:
+    with open(os.path.join(out_path, 'log.json'), 'w') as file:
         file_data = {"img_details": []}
         json.dump(file_data, file)
         print("results are being stored in log.json")
 
 
 def write_json(new_data, out_path):  # this acts as a logger
-    with open(os.path.join(out_path,'log.json'), 'r+') as file:
+    with open(os.path.join(out_path, 'log.json'), 'r+') as file:
         # First we load existing data into a dict.
         file_data = json.load(file)
         # Join new_data with file_data inside emp_details
@@ -58,6 +57,8 @@ def write_json(new_data, out_path):  # this acts as a logger
 
 def blur_faces_licenses(in_image, out_path, model, out_folder):
 
+    # Read your image with EXIF data using PIL/Pillow
+    imWithEXIF = Image.open(in_image)
     sec_v, sec_h = 7, 6  # this params depends on large of image, adjust to your own necessity
 
     # get subsections using slice function
@@ -121,8 +122,6 @@ def blur_faces_licenses(in_image, out_path, model, out_folder):
         aux_images.append(img)
 
     new_image = merge_image(aux_images, sec_v, sec_h)
-    print('Image ' +
-          os.path.basename(in_image)+'  succesfully processed with '+str(counter_faces)+' faces and ' + str(counter_plates) + ' licenses plates detected')
 
     log_details = {"image": os.path.basename(in_image),
                    "faces_detected": counter_faces,
@@ -130,4 +129,13 @@ def blur_faces_licenses(in_image, out_path, model, out_folder):
                    }
     write_json(log_details, out_folder)
 
-    return cv2.imwrite(os.path.join(out_path, os.path.basename(in_image)), new_image)
+    #convert BGR to RGB
+    im_rgb = cv2.cvtColor(new_image, cv2.COLOR_BGR2RGB)
+    # Convert OpenCV image onto PIL Image
+    OpenCVImageAsPIL = Image.fromarray(im_rgb)
+
+    # Encode newly-created image into memory as JPEG along with EXIF from other image
+    OpenCVImageAsPIL.save(os.path.join(out_path, os.path.basename(
+        in_image)), exif=imWithEXIF.info['exif'])
+
+    return print('Image ' + os.path.basename(in_image)+'  succesfully processed with '+str(counter_faces)+' faces and ' + str(counter_plates) + ' licenses plates detected')

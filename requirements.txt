@@ -1,4 +1,5 @@
 opencv-python
+pillow
 numpy
 retina-face
 glob

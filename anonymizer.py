@@ -6,6 +6,7 @@ from datetime import datetime
 import os
 
 print('Started at ' + str(datetime.now()))
+print(cv2.getBuildInformation())
 
 # paths to custom yolov4 model
 pth_weights = os.path.normpath(
@@ -13,6 +14,8 @@ pth_weights = os.path.normpath(
 pth_cfg = os.path.normpath(r"YoloV4_custom_weights/yolov4-custom.cfg")
 
 model = cv2.dnn.readNet(pth_weights, pth_cfg)  # read the model here
+model.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA) #allow inference using GPU
+model.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16) #allow inference using GPU
 
 # example: data
 in_path = os.path.normpath(input("Ruta de entrada de las imagenes :"))

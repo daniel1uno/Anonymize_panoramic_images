@@ -4,21 +4,19 @@ from retinaface import RetinaFace
 import json
 import os
 from PIL import Image
-import io
-
+from nms import non_max_suppression_fast as nms
 
 def slice_image(path, v_sections, h_sections):
     # cv2.imread() -> takes an image as an input
     img = cv2.imread(path)
-    h, w = img.shape[:2]  # read  size of image
-
+    h, w = img.shape[:2]  # read  size of image 
     section_v = w//v_sections  # calculate width of sections
     section_h = h//h_sections  # calculate height of sections
     images = []
     # slice image into h_sections * v_sections
     for i in range(1, h_sections+1):
         for j in range(1, v_sections+1):
-            sliced_image = img[(i*section_h)-section_h:(i*section_h),
+            sliced_image = img[(i*section_h)-section_h:(i*section_h), 
                                (j*section_v)-section_v:(j*section_v)]
             images.append(sliced_image)
 
@@ -104,20 +102,33 @@ def blur_faces_licenses(in_image, out_path, model, out_folder):
                     y = int(centerY - height / 2)
                     boxes.append([x, y, width, height])
                     confidences.append(float(confidence))
+        
+        #idxs = cv2.dnn.NMSBoxes(np.array(boxes), confidences, 0.2, 0.4)
+        idxs = nms(np.array(boxes),0.4)
+       
+        for box in idxs:
+            coordinates = np.array([box[0],box[1],box[0] + box[2],box[1]+box[3]])
+            coordinates = coordinates.clip(0)
+            start_x, start_y, end_x, end_y = coordinates
+            #print(start_x, start_y, end_x, end_y)
+            plate_detected = img[start_y: end_y, start_x: end_x]
+            blur_plate = cv2.blur(plate_detected, (20, 20))
+            img[start_y: end_y, start_x: end_x] = blur_plate
+            counter_plates += 1
 
-        idxs = cv2.dnn.NMSBoxes(boxes, confidences, 0.2, 0.4)
-        if len(idxs) > 0:
-            # loop over the indexes we are keeping
-            for i in idxs.flatten():
-                coordinates = np.array(
-                    [boxes[i][0], boxes[i][1], boxes[i][0]+boxes[i][2], boxes[i][1]+boxes[i][3]])
-                coordinates = coordinates.clip(0)
-                start_x, start_y, end_x, end_y = coordinates
-                #print(start_x, start_y, end_x, end_y)
-                plate_detected = img[start_y: end_y, start_x: end_x]
-                blur_plate = cv2.blur(plate_detected, (20, 20))
-                img[start_y: end_y, start_x: end_x] = blur_plate
-                counter_plates += 1
+
+        # if len(idxs) > 0:
+        #     # loop over the indexes we are keeping
+        #     for i in idxs.flatten():
+        #         coordinates = np.array(
+        #             [boxes[i][0], boxes[i][1], boxes[i][0]+boxes[i][2], boxes[i][1]+boxes[i][3]])
+        #         coordinates = coordinates.clip(0)
+        #         start_x, start_y, end_x, end_y = coordinates
+        #         #print(start_x, start_y, end_x, end_y)
+        #         plate_detected = img[start_y: end_y, start_x: end_x]
+        #         blur_plate = cv2.blur(plate_detected, (20, 20))
+        #         img[start_y: end_y, start_x: end_x] = blur_plate
+        #         counter_plates += 1
 
         aux_images.append(img)
 

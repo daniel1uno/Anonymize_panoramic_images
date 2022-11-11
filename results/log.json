@@ -3,17 +3,17 @@
         {
             "image": "1658781276_0002.jpg",
             "faces_detected": 53,
-            "licenses_plates_detected": 18
+            "licenses_plates_detected": 52
         },
         {
             "image": "1658781276_0001.jpg",
             "faces_detected": 52,
-            "licenses_plates_detected": 12
+            "licenses_plates_detected": 48
         },
         {
             "image": "1658781276_0003.jpg",
             "faces_detected": 46,
-            "licenses_plates_detected": 15
+            "licenses_plates_detected": 44
         }
     ]
 }

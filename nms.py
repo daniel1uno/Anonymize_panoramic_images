@@ -1,3 +1,4 @@
+#this function was taken from  https://pyimagesearch.com/2015/02/16/faster-non-maximum-suppression-python/
 # import the necessary packages
 import numpy as np
 # Malisiewicz et al.

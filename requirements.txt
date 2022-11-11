@@ -6,3 +6,5 @@ glob
 json
 datetime
 pathlib
+pip install git+https://github.com/AminHP/face-detection.git
+protobuf

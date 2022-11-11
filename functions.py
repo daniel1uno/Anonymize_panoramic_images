@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 from retinaface import RetinaFace
+from face_detection import RetinaFace as RF
 import json
 import os
 from PIL import Image
@@ -71,16 +72,30 @@ def blur_faces_licenses(in_image, out_path, model, out_folder):
         img_h, img_w = img.shape[:2]
 
         # face detections
-        face_detections = RetinaFace.detect_faces(img, threshold=0.4)
+        detector = RF(gpu_id=0)
+        
+        faces = detector(img)
+        if len(faces) != 0:
+            for face in faces:
+                if face[2]>0.4:
+                    coordinates = face[0].astype("int")
+                    coordinates = coordinates.clip(0)
+                    start_x, start_y, end_x, end_y = coordinates
+                    detected_face = img[start_y: end_y, start_x: end_x]
+                    detected_face = cv2.blur(detected_face, (20, 20))
+                    img[start_y: end_y, start_x: end_x] = detected_face
+                    counter_faces += 1
+                
+        # face_detections = RetinaFace.detect_faces(img, threshold=0.4)
 
-        if type(face_detections) is dict:  # check that detection was successfull
+        # if type(face_detections) is dict:  # check that detection was successfull
 
-            for face in face_detections:
-                start_x, start_y, end_x, end_y = face_detections[face]['facial_area']
-                detected_face = img[start_y: end_y, start_x: end_x]
-                detected_face = cv2.blur(detected_face, (20, 20))
-                img[start_y: end_y, start_x: end_x] = detected_face
-                counter_faces += 1
+        #     for face in face_detections:
+        #         start_x, start_y, end_x, end_y = face_detections[face]['facial_area']
+        #         detected_face = img[start_y: end_y, start_x: end_x]
+        #         detected_face = cv2.blur(detected_face, (20, 20))
+        #         img[start_y: end_y, start_x: end_x] = detected_face
+        #         counter_faces += 1
 
         # license_plates detections
         blob = cv2.dnn.blobFromImage(
